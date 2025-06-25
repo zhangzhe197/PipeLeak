@@ -13,12 +13,11 @@ config = {
         "output_size": 4,   # 类别数量，对应 LeakType 的不同种类
         "dropout": 0.2,
         
-        "Normalization": "None",  # 是否启用归一化
-        "model": "LSTM",  # 可选 "LSTM" 或 "Transformer"
+        "Normalization": "Sample",  # 是否启用归一化
+        "model": "FFT",  # 可选 "LSTM" 或 "Transformer"
         "num_epochs": 50,   # 增加训练轮数以观察效果
-        "learning_rate": 0.001,
-
-        
+        "learning_rate": 0.0001,
+        "seed" : 1234,
         "model_save_path": "best_classification_model.pth"
     }
 

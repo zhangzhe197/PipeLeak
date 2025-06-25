@@ -1,19 +1,20 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
-import os
-
+import os, pdb
 # --- 从自定义模块导入 ---
 # 假设你的类和函数都在这些路径下
 from Loader.SeriesLoader import TimeSeriesDataset
 from Model.LstmModel import LSTMForecastModel
 from Model.Transformer import TransformerClassificationModel
+from Model.Fits import FFTClassify
+from utils.Setseed import set_seed
 from utils.Training import train_model, eval_model
 from config import config, model_config 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
-    
+    set_seed(config["seed"])  # 设置全局随机种子
     # --- 3. 数据准备与划分 ---
     print("Loading and splitting dataset...")
     full_dataset = TimeSeriesDataset(
@@ -75,6 +76,14 @@ def main():
             dropout=model_config["Transformer"]["dropout"],
             max_len=config["window_size"]  # 确保最大长度与窗口大小一致
         ).to(device)
+    if config["model"] == "FFT":
+        model = FFTClassify(
+            seq_len=config["window_size"],
+            classNum=config["output_size"],
+            feature_num=input_size,
+            minFreq=int(config["window_size"] // 2),  # 最小频率
+
+        ).to(device)
     # 对于单标签多分类任务，CrossEntropyLoss是标准选择
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
@@ -97,7 +106,7 @@ def main():
         # 保存最佳模型
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), config["model_save_path"])
+            torch.save(model.state_dict(), config["model"]+config["model_save_path"])
             print(f"  -> Best model saved with validation loss: {best_val_loss:.4f}")
 
 
