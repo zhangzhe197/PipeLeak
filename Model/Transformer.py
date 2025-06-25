@@ -114,5 +114,4 @@ class TransformerClassificationModel(nn.Module):
         
         # 5. 分类
         logits = self.classification_head(pooled_output) # shape: (batch_size, output_size)
-        logits = self.softmax(logits) # 应用Softmax以获得概率分布
         return logits

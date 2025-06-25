@@ -91,6 +91,7 @@ def eval_model(model, val_loader, criterion, device):
             # 5. 计算预测结果
             # torch.max(outputs, 1) 返回每一行的 (最大值, 最大值索引)
             # 我们只需要索引，即预测的类别
+            outputs = torch.nn.Softmax(dim=1)(outputs)  # 应用Softmax以获得概率分布
             _, predicted_classes = torch.max(outputs, 1)
             
             # 6. 收集所有批次的预测和真实标签，用于最后统一计算准确率

@@ -21,7 +21,8 @@ def main():
         file_pattern=config["file_pattern"],
         window_size=config["window_size"],
         stride=config["stride"],
-        target_col=config["target_col"]
+        target_col=config["target_col"],
+        Normalization=config.get("Normalization", True)  # 默认启用归一化
     )
     
     # 计算划分大小
@@ -81,20 +82,23 @@ def main():
     # --- 5. 训练与验证循环 ---
     print("\n--- Starting Training Loop ---")
     best_val_loss = float('inf') # 初始化最佳验证损失为无穷大
-    model.load_state_dict(torch.load("/home/zhangzhe/code/project2025/PipLeak/Transformerbest_classification_model.pth"))
     for epoch in range(config["num_epochs"]):
         print(f"\nEpoch {epoch + 1}/{config['num_epochs']}")
         
         # 调用训练函数
-        
+        train_loss = train_model(model, train_loader, optimizer, criterion, device)
         # 调用评估函数
         # 注意：eval_model 需要返回 val_loss, predictions, labels
         val_loss, acc  = eval_model(model, val_loader, criterion, device)
-      
+        print(f"  -> Average Training Loss: {train_loss:.4f}")
         print(f"  -> Average Validation Loss: {val_loss:.4f}")
         print(f"  -> Validation Accuracy: {acc:.4f}")
 
-        # 保
+        # 保存最佳模型
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            torch.save(model.state_dict(), config["model_save_path"])
+            print(f"  -> Best model saved with validation loss: {best_val_loss:.4f}")
 
 
 if __name__ == "__main__":

@@ -12,11 +12,11 @@ class TimeSeriesDataset(Dataset):
     - 确保 __getitem__ 返回适合 CrossEntropyLoss 的标签。
     - 添加了Z-score数据归一化。
     """
-    def __init__(self, data_dir, file_pattern, window_size, stride=1, target_col='LeakType'):
+    def __init__(self, data_dir, file_pattern, window_size, stride=1, target_col='LeakType', Normalization = True):
         self.window_size = window_size
         self.stride = stride
         self.target_col = target_col
-        
+        self.Normalization = Normalization
         file_paths = sorted(glob.glob(os.path.join(data_dir, file_pattern)))
         
         if not file_paths:
@@ -41,28 +41,29 @@ class TimeSeriesDataset(Dataset):
         # 这一步会遍历所有文件，将特征数据临时存储起来，用于全局统计量的计算。
         # 对于非常大的数据集，这可能仍然占用大量内存。
         # 更优化的方法是增量计算均值和方差，但对于多数情况，这种方法足够且简单。
-        all_features_data_np = []
-        for file_path in file_paths:
-            df = pd.read_csv(file_path)
-            # 确保只选取特征列，并转换为 numpy 数组
-            all_features_data_np.append(df[self.feature_cols_names].values) 
-        
-        # 将所有特征数据合并为一个大的 NumPy 数组
-        # np.concatenate 是为了把所有文件的特征数据堆叠起来，方便统一计算统计量
-        combined_features = np.concatenate(all_features_data_np, axis=0)
-        
-        # 3. 计算均值和标准差
-        self.mean = torch.tensor(np.mean(combined_features, axis=0), dtype=torch.float32)
-        self.std = torch.tensor(np.std(combined_features, axis=0), dtype=torch.float32)
-        
-        # 4. 处理标准差为零的情况（例如，某个特征是常数）
-        # 添加一个小的 epsilon 来避免除以零
-        epsilon = 1e-8
-        self.std = torch.where(self.std == 0, torch.tensor(epsilon, dtype=torch.float32), self.std)
-        
-        print(f"计算得到的特征均值: {self.mean}")
-        print(f"计算得到的特征标准差: {self.std}")
-        print("数据归一化参数已计算。")
+        if self.Normalization:
+            all_features_data_np = []
+            for file_path in file_paths:
+                df = pd.read_csv(file_path)
+                # 确保只选取特征列，并转换为 numpy 数组
+                all_features_data_np.append(df[self.feature_cols_names].values) 
+            
+            # 将所有特征数据合并为一个大的 NumPy 数组
+            # np.concatenate 是为了把所有文件的特征数据堆叠起来，方便统一计算统计量
+            combined_features = np.concatenate(all_features_data_np, axis=0)
+            
+            # 3. 计算均值和标准差
+            self.mean = torch.tensor(np.mean(combined_features, axis=0), dtype=torch.float32)
+            self.std = torch.tensor(np.std(combined_features, axis=0), dtype=torch.float32)
+            
+            # 4. 处理标准差为零的情况（例如，某个特征是常数）
+            # 添加一个小的 epsilon 来避免除以零
+            epsilon = 1e-8
+            self.std = torch.where(self.std == 0, torch.tensor(epsilon, dtype=torch.float32), self.std)
+            
+            print(f"计算得到的特征均值: {self.mean}")
+            print(f"计算得到的特征标准差: {self.std}")
+            print("数据归一化参数已计算。")
 
         # 5. 加载数据并转换为Tensor（与之前相同）
         print("正在加载数据并转换为Tensor...")
@@ -105,7 +106,9 @@ class TimeSeriesDataset(Dataset):
         features = data_tensor[start_idx:end_idx, self.feature_indices]
         
         # 4. 应用归一化
-        features = (features - self.mean) / self.std
+        if self.Normalization:
+            # 使用预先计算的均值和标准差进行 Z-score 标准化
+            features = (features - self.mean) / self.std
         
         # 从原始的 float32 Tensor 中切片出标签
         # 假设 LeakType 标签是对应窗口末尾的类型

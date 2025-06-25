@@ -71,5 +71,4 @@ class LSTMForecastModel(nn.Module):
         # out 形状: (batch_size, output_size)
         out = self.fc(last_time_step_out)
         # 6. 应用Softmax激活函数，得到每个类别的概率分布
-        out = self.softmax(out)    
         return out
