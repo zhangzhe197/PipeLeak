@@ -11,8 +11,10 @@ class TimeSeriesDataset(Dataset):
     - 在初始化时将所有数据转换为PyTorch Tensor。
     - 确保 __getitem__ 返回适合 CrossEntropyLoss 的标签。
     - 添加了Z-score数据归一化。
+    支持样本级别的归一化处理, 全部数据的归一化处理, 和不做归一化处理
     """
-    def __init__(self, data_dir, file_pattern, window_size, stride=1, target_col='LeakType', Normalization = True):
+    def __init__(self, data_dir, file_pattern, window_size, stride=1, target_col='LeakType', Normalization="None"):
+#    初始化数据集。, 并指定归一化处理的方式 "None "、"Sample" 或 "All"。
         self.window_size = window_size
         self.stride = stride
         self.target_col = target_col
@@ -41,7 +43,7 @@ class TimeSeriesDataset(Dataset):
         # 这一步会遍历所有文件，将特征数据临时存储起来，用于全局统计量的计算。
         # 对于非常大的数据集，这可能仍然占用大量内存。
         # 更优化的方法是增量计算均值和方差，但对于多数情况，这种方法足够且简单。
-        if self.Normalization:
+        if self.Normalization == "All":
             all_features_data_np = []
             for file_path in file_paths:
                 df = pd.read_csv(file_path)
@@ -106,10 +108,15 @@ class TimeSeriesDataset(Dataset):
         features = data_tensor[start_idx:end_idx, self.feature_indices]
         
         # 4. 应用归一化
-        if self.Normalization:
+        if self.Normalization == "All":
             # 使用预先计算的均值和标准差进行 Z-score 标准化
             features = (features - self.mean) / self.std
-        
+        elif self.Normalization == "Sample":
+            # 对每个样本进行 Z-score 标准化
+            sample_mean = features.mean(dim=0)
+            sample_std = features.std(dim=0) + 1e-8 # 避免除以零
+            features = (features - sample_mean) / sample_std
+        # 如果 Normalization 是 "None
         # 从原始的 float32 Tensor 中切片出标签
         # 假设 LeakType 标签是对应窗口末尾的类型
         label_tensor = data_tensor[end_idx - 1, self.target_idx] 
@@ -124,3 +131,9 @@ class TimeSeriesDataset(Dataset):
         返回特征数量。
         """
         return len(self.feature_indices)
+    
+    def get_column_names(self):
+        """
+        返回特征列的名称列表。
+        """
+        return self.feature_cols_names

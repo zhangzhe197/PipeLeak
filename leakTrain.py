@@ -13,7 +13,7 @@ from config import config, model_config
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
-
+    
     # --- 3. 数据准备与划分 ---
     print("Loading and splitting dataset...")
     full_dataset = TimeSeriesDataset(
