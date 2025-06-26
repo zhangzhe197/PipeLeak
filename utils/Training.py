@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm  # 引入tqdm来显示进度条，提升用户体验
 
-def train_model(model, train_loader, optimizer, criterion, device):
+def train_model(model, train_loader, optimizer, criterion, device, scheduler=None):
     """
     模型单轮训练函数。
 
@@ -14,7 +14,7 @@ def train_model(model, train_loader, optimizer, criterion, device):
     - optimizer (torch.optim.Optimizer): 优化器。
     - criterion (nn.Module): 损失函数。
     - device (torch.device): 'cuda' 或 'cpu'。
-
+    - scheduler (torch.optim.lr_scheduler, optional): 学习率调度器。
     返回:
     - float: 当前epoch的平均训练损失。
     """
@@ -44,7 +44,8 @@ def train_model(model, train_loader, optimizer, criterion, device):
         
         # (可选) 在进度条上显示当前批次的损失
         progress_bar.set_postfix(loss=loss.item())
-
+    if scheduler is not None:
+            scheduler.step()
     # 计算并返回平均损失
     avg_loss = total_loss / len(train_loader)
     return avg_loss

@@ -282,13 +282,13 @@ for condition, df in dfs.items():
     if condition_ele[1] == "CC":
         newDFS[condition]['LeakType'] = 0
     elif condition_ele[1] == "GL":
-        newDFS[condition]['LeakType'] = 0
-    elif condition_ele[1] == "LC":
         newDFS[condition]['LeakType'] = 1
-    elif condition_ele[1] == "OL":
+    elif condition_ele[1] == "LC":
         newDFS[condition]['LeakType'] = 2
-    elif condition_ele[1] == "NL":
+    elif condition_ele[1] == "OL":
         newDFS[condition]['LeakType'] = 3
+    elif condition_ele[1] == "NL":
+        newDFS[condition]['LeakType'] = 4
     if condition_ele[2] == "0.47 LPS":
         newDFS[condition]['FlowCondition'] = 0
     elif condition_ele[2] == "0.18 LPS":

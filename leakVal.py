@@ -8,7 +8,6 @@ from Loader.SeriesLoader import TimeSeriesDataset
 from Model.LstmModel import LSTMForecastModel
 from Model.Transformer import TransformerClassificationModel
 from Model.Fits import FFTClassify
-from torch.optim.lr_scheduler import MultiStepLR
 from utils.Setseed import set_seed
 from utils.Training import train_model, eval_model
 from config import config, model_config 
@@ -60,10 +59,10 @@ def main():
     if config["model"] == "LSTM":
         model = LSTMForecastModel(
             input_size=input_size,
-            hidden_size=model_config["LSTM"]["hidden_size"],
-            num_layers=model_config["LSTM"]["num_layers"],
-            output_size=model_config["LSTM"]["output_size"],
-            dropout=model_config["LSTM"]["dropout"]
+            hidden_size=config["hidden_size"],
+            num_layers=config["num_layers"],
+            output_size=config["output_size"],
+            dropout=config["dropout"]
         ).to(device)
     
     if config["model"] == "Transformer":
@@ -80,38 +79,29 @@ def main():
     if config["model"] == "FFT":
         model = FFTClassify(
             seq_len=config["window_size"],
-            classNum=model_config["FFT"]["output_size"],
+            classNum=config["output_size"],
             feature_num=input_size,
             minFreq=int(config["window_size"] // 2),  # 最小频率
 
         ).to(device)
     # 对于单标签多分类任务，CrossEntropyLoss是标准选择
     criterion = nn.CrossEntropyLoss()
-    
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
-    milestones = config["milestone"] 
-    gamma = config["gamma"]       
-    scheduler = MultiStepLR(optimizer, milestones=milestones, gamma=gamma)
+
     # --- 5. 训练与验证循环 ---
     print("\n--- Starting Training Loop ---")
-    best_val_loss = float('inf') # 初始化最佳验证损失为无穷大
+    model.load_state_dict(torch.load("./best_classification_model_LSTM.pth", map_location=device))  # 加载预训练模型
     for epoch in range(config["num_epochs"]):
         print(f"\nEpoch {epoch + 1}/{config['num_epochs']}")
         
         # 调用训练函数
-        train_loss = train_model(model, train_loader, optimizer, criterion, device)
+
         # 调用评估函数
         # 注意：eval_model 需要返回 val_loss, predictions, labels
         val_loss, acc  = eval_model(model, val_loader, criterion, device)
-        print(f"  -> Average Training Loss: {train_loss:.4f}")
         print(f"  -> Average Validation Loss: {val_loss:.4f}")
         print(f"  -> Validation Accuracy: {acc:.4f}")
 
-        # 保存最佳模型
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), config["model"]+config["model_save_path"])
-            print(f"  -> Best model saved with validation loss: {best_val_loss:.4f}")
 
 
 if __name__ == "__main__":
