@@ -8,6 +8,7 @@ from Loader.SeriesLoader import TimeSeriesDataset
 from Model.LstmModel import LSTMForecastModel
 from Model.Transformer import TransformerClassificationModel
 from Model.Fits import FFTClassify
+from torch.optim.lr_scheduler import MultiStepLR
 from utils.Setseed import set_seed
 from utils.Training import train_model, eval_model
 from config import config, model_config 
@@ -23,7 +24,9 @@ def main():
         window_size=config["window_size"],
         stride=config["stride"],
         target_col=config["target_col"],
-        Normalization=config.get("Normalization", True)  # 默认启用归一化
+        Normalization=config.get("Normalization", True) ,
+        delete_col=config["delete_col"] , # 删除不需要的列
+        constant_col=config["constant_col"] # 常量列不参与归一化
     )
     
     # 计算划分大小
@@ -59,10 +62,10 @@ def main():
     if config["model"] == "LSTM":
         model = LSTMForecastModel(
             input_size=input_size,
-            hidden_size=config["hidden_size"],
-            num_layers=config["num_layers"],
-            output_size=config["output_size"],
-            dropout=config["dropout"]
+            hidden_size=model_config["LSTM"]["hidden_size"],
+            num_layers=model_config["LSTM"]["num_layers"],
+            output_size=model_config["LSTM"]["output_size"],
+            dropout=model_config["LSTM"]["dropout"]
         ).to(device)
     
     if config["model"] == "Transformer":
@@ -79,30 +82,21 @@ def main():
     if config["model"] == "FFT":
         model = FFTClassify(
             seq_len=config["window_size"],
-            classNum=config["output_size"],
+            classNum=model_config["FFT"]["output_size"],
             feature_num=input_size,
             minFreq=int(config["window_size"] // 2),  # 最小频率
 
         ).to(device)
     # 对于单标签多分类任务，CrossEntropyLoss是标准选择
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
+    model.load_state_dict(torch.load("FFTbest_classification_model.pth", map_location=device))
+    print("Model loaded successfully.")
+    eval_stat = eval_model(
+        model=model,
+        val_loader=val_loader,
+        criterion=criterion,
+        device=device,
+    )
+    print(f"Validation Loss: {eval_stat[0]:.4f}, Accuracy: {eval_stat[1]:.4f}")
 
-    # --- 5. 训练与验证循环 ---
-    print("\n--- Starting Training Loop ---")
-    model.load_state_dict(torch.load("./best_classification_model_LSTM.pth", map_location=device))  # 加载预训练模型
-    for epoch in range(config["num_epochs"]):
-        print(f"\nEpoch {epoch + 1}/{config['num_epochs']}")
-        
-        # 调用训练函数
-
-        # 调用评估函数
-        # 注意：eval_model 需要返回 val_loss, predictions, labels
-        val_loss, acc  = eval_model(model, val_loader, criterion, device)
-        print(f"  -> Average Validation Loss: {val_loss:.4f}")
-        print(f"  -> Validation Accuracy: {acc:.4f}")
-
-
-
-if __name__ == "__main__":
-    main()
+main()

@@ -26,7 +26,7 @@ def main():
         target_col=config["target_col"],
         Normalization=config.get("Normalization", True) ,
         delete_col=config["delete_col"] , # 删除不需要的列
-        constant_cols=config["constant_cols"] # 常量列不参与归一化
+        constant_col=config["constant_col"] # 常量列不参与归一化
     )
     
     # 计算划分大小

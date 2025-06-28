@@ -143,7 +143,7 @@ def main():
     val_loader = DataLoader(
         dataset=val_dataset,
         batch_size=config["batch_size"],
-        shuffle=False, # 验证集不需要打乱
+        shuffle=True, # 验证集不需要打乱
         num_workers=config["num_workers"],
         pin_memory=True
     )
@@ -151,7 +151,7 @@ def main():
     test_loader = DataLoader( # 新增测试集DataLoader
         dataset=test_dataset,
         batch_size=config["batch_size"],
-        shuffle=False, # 测试集不需要打乱
+        shuffle=True, # 测试集不需要打乱
         num_workers=config["num_workers"],
         pin_memory=True
     )
@@ -190,7 +190,7 @@ def main():
     #     print(f"Error loading model: {e}. Starting with untrained model.")
 
     # --- 5. 执行绘图 ---
-    plot_test_samples(test_loader, full_dataset, num_samples_per_label=3, output_path="test_set_feature_plots.png")
+    plot_test_samples(test_loader, full_dataset, num_samples_per_label=3, output_path="test.png")
 
     # --- 6. 训练与评估 (可选，如果你想继续训练模型的话) ---
     # criterion = nn.CrossEntropyLoss()

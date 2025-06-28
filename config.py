@@ -7,8 +7,8 @@ config = {
         "batch_size": 64,
         "num_workers": 1,  # 根据你的CPU核心数调整
         "validation_split": 0.2, # 使用20%的数据作为验证集
-        "delete_col": [],  # 删除不需要的列
-        "constant_col": ["Structure", "FlowCondition"],  # 常量列不参与归一化
+        "delete_col": ["Structure", "FlowCondition"],  # 删除不需要的列
+        "constant_col": [],  # 常量列不参与归一化
         "dropout": 0.2,
         
         "Normalization": "Sample",  # 是否启用归一化
