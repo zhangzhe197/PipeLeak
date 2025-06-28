@@ -24,7 +24,9 @@ def main():
         window_size=config["window_size"],
         stride=config["stride"],
         target_col=config["target_col"],
-        Normalization=config.get("Normalization", True)  # 默认启用归一化
+        Normalization=config.get("Normalization", True) ,
+        delete_col=config["delete_col"] , # 删除不需要的列
+        constant_cols=config["constant_cols"] # 常量列不参与归一化
     )
     
     # 计算划分大小

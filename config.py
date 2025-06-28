@@ -5,15 +5,16 @@ config = {
         "stride": int(2560 * 0.1), 
         "target_col": 'LeakType',
         "batch_size": 64,
-        "num_workers": 8,  # 根据你的CPU核心数调整
+        "num_workers": 1,  # 根据你的CPU核心数调整
         "validation_split": 0.2, # 使用20%的数据作为验证集
-        
+        "delete_col": [],  # 删除不需要的列
+        "constant_col": ["Structure", "FlowCondition"],  # 常量列不参与归一化
         "dropout": 0.2,
         
         "Normalization": "Sample",  # 是否启用归一化
-        "model": "",  # 可选 "LSTM" 或 "Transformer"
+        "model": "FFT",  # 可选 "LSTM" 或 "Transformer"
         "num_epochs": 100,   # 增加训练轮数以观察效果
-        "learning_rate": 0.01,
+        "learning_rate": 0.001,
         "seed" : 1234,
         "milestone": [33,66],  # 学习率调整的里程碑
         "gamma": 0.2,  # 学习率调整的衰减

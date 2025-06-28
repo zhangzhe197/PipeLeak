@@ -36,7 +36,7 @@ def plot_test_samples(test_loader, dataset_instance, num_samples_per_label=3, ou
     # 注意：这里我们只从DataLoader中获取一定数量的样本，以避免内存溢出
     # 如果测试集很大，你可能需要更智能的抽样策略
     max_samples_to_collect = 1000 # 收集多一些，确保能抽到
-    
+    pdb.set_trace() # 调试用
     for batch_idx, (data, labels) in enumerate(test_loader):
         for i in range(data.shape[0]):
             sample_data = data[i].cpu().numpy() # (window_size, input_size)
@@ -105,7 +105,9 @@ def main():
         window_size=config["window_size"],
         stride=config["stride"],
         target_col=config["target_col"],
-        Normalization="All" # 默认启用归一化
+        Normalization="Sample" # 默认启用归一化
+        , delete_col=config["delete_col"] , # 删除不需要的列
+        constant_col=config["constant_col"] # 常量列不参与归一化
     )
     
     # 计算划分大小：训练集、验证集、测试集
@@ -177,7 +179,6 @@ def main():
             max_len=config["window_size"]  # 确保最大长度与窗口大小一致
         ).to(device)
     
-    model.load_state_dict(torch.load("best_classification_model_LSTM.pth", map_location=device))
     # 对于单标签多分类任务，CrossEntropyLoss是标准选择
     # 注意：如果您只是为了绘图，下面这行可以注释掉，因为它需要一个预训练模型文件
     # try:

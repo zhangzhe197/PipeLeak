@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import pandas as pd
 import numpy as np # 用于计算均值和标准差
 import os
-import glob
+import glob, pdb
 
 class TimeSeriesDataset(Dataset):
     """
@@ -13,7 +13,7 @@ class TimeSeriesDataset(Dataset):
     - 添加了Z-score数据归一化。
     支持样本级别的归一化处理, 全部数据的归一化处理, 和不做归一化处理
     """
-    def __init__(self, data_dir, file_pattern, window_size, stride=1, target_col='LeakType', Normalization="None"):
+    def __init__(self, data_dir, file_pattern, window_size, stride=1, delete_col = [],constant_col = [], target_col='LeakType', Normalization="None"):
 #    初始化数据集。, 并指定归一化处理的方式 "None "、"Sample" 或 "All"。
         self.window_size = window_size
         self.stride = stride
@@ -26,7 +26,7 @@ class TimeSeriesDataset(Dataset):
             
         self.data_tensors = []
         self.feature_indices = [] # 存储特征列的索引
-        
+        self.constant_cols = constant_col
         print("正在初始化数据集并计算归一化参数...")
         
         # 1. 确定特征列和目标列的整数索引
@@ -36,9 +36,11 @@ class TimeSeriesDataset(Dataset):
             raise ValueError(f"目标列 '{self.target_col}' 在文件 {file_paths[0]} 中不存在。")
         
         self.target_idx = temp_df.columns.get_loc(self.target_col)
-        self.feature_cols_names = [col for col in temp_df.columns if col != self.target_col]
+        self.feature_cols_names = [col for col in temp_df.columns if (col != self.target_col and col not in delete_col) ]
         self.feature_indices = [temp_df.columns.get_loc(col) for col in self.feature_cols_names]
 
+        print(self.feature_cols_names, "特征列已确定。")
+        print(self.feature_indices, "特征索引已确定。")
         # 2. 收集所有特征数据用于计算均值和标准差
         # 这一步会遍历所有文件，将特征数据临时存储起来，用于全局统计量的计算。
         # 对于非常大的数据集，这可能仍然占用大量内存。
@@ -73,7 +75,7 @@ class TimeSeriesDataset(Dataset):
             df = pd.read_csv(file_path)
             tensor_data = torch.tensor(df.values, dtype=torch.float32)
             self.data_tensors.append(tensor_data)
-        
+
         # 6. 创建索引映射表（与之前相同）
         self.index_map = []
         print("正在创建样本索引...")
@@ -106,7 +108,6 @@ class TimeSeriesDataset(Dataset):
         
         # 特征已经是 float32 类型
         features = data_tensor[start_idx:end_idx, self.feature_indices]
-        
         # 4. 应用归一化
         if self.Normalization == "All":
             # 使用预先计算的均值和标准差进行 Z-score 标准化
