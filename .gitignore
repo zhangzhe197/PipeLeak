@@ -1,1 +1,2 @@
 # Ignore all PyTorch model state_dict files
+*.png   

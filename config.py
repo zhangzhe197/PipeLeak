@@ -10,7 +10,7 @@ config = {
         "delete_col": ["Structure", "FlowCondition"],  # 删除不需要的列
         "constant_col": [],  # 常量列不参与归一化
         "dropout": 0.2,
-        
+        "all_columns": ['ValueH1N', 'ValueH2N', 'ValueA2', 'TimeA1', 'ValueA1', 'ValueP2', 'ValueP1'], 
         "Normalization": "Sample",  # 是否启用归一化
         "model": "FFT",  # 可选 "LSTM" 或 "Transformer"
         "num_epochs": 100,   # 增加训练轮数以观察效果
