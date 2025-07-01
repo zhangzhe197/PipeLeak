@@ -139,10 +139,9 @@ class ModelInference:
         with torch.no_grad():
             # 1. 预处理数据
             input_tensor = self._preprocess(df)
-            
             # 2. 模型推理
             outputs = self.model(input_tensor)
-            
+        #    outputs = torch.nn.Softmax(dim=1)(outputs)  # 应用 softmax 获取概率分布
             # 3. 获取预测结果
             # outputs 的形状是 [1, num_classes]，我们取概率最大的那个
             _, predicted_index_tensor = torch.max(outputs.data, 1)

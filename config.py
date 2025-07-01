@@ -1,5 +1,5 @@
 config = {
-        "data_dir": "/home/zhangzhe/data/leak/processed_data",
+        "data_dir": "/home/zhangzhe/data/processed_leak_data/",
         "file_pattern": 'leak_exp_*.csv',
         "window_size": int(2560 * 0.1),
         "stride": int(2560 * 0.1), 
@@ -15,7 +15,7 @@ config = {
         "model": "FFT",  # 可选 "LSTM" 或 "Transformer"
         "num_epochs": 100,   # 增加训练轮数以观察效果
         "learning_rate": 0.001,
-        "seed" : 1234,
+        "seed" : 123232324,
         "milestone": [33,66],  # 学习率调整的里程碑
         "gamma": 0.2,  # 学习率调整的衰减
         "model_save_path": "best_classification_model.pth"
