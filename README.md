@@ -3,25 +3,13 @@
 
 这是中国石油大学(华东) 2025 年小学期计算机科学与技术人工智能方向的实践, 
 
-## 模型和训练结果
-### 模型结构图
-模型在处理单路对齐数据的时候的结构图
-![alt text](docs/FFormer.drawio.png)
-
-模型在处理未对齐数据的时候的结构图
-![alt text](docs/FFormer内部融合.drawio.png)
-### 实验结果
-![alt text](docs/Pic1W.png)
-![alt text](docs/Pic2W.png)
-
-![alt text](docs/Pic3W.png)
 
 
 ## 1. 数据准备 (使用 `washLeakData.py`)
 
 此脚本用于将原始的传感器CSV文件和声学RAW文件转换为适合模型训练的结构化数据。
 
--   **数据来源**: 请先从 [Mendeley 数据集](https://data.mendeley.com/datasets/tbrnp6vrnj/1) 下载并解压原始数据。由于这个数据集中存在两种传感器频率(25600Hz, 8000Hz), 并且结合我们的特征融合和数据层融合方法, 有两个处理方式.
+-   **数据来源**: 请先从 [Dataset of Leak Simulations in Experimental Testbed Water Distribution System.](https://data.mendeley.com/datasets/tbrnp6vrnj/1) 下载并解压原始数据。由于这个数据集中存在两种传感器频率(25600Hz, 8000Hz), 并且结合我们的特征融合和数据层融合方法, 有两个处理方式.
 -   **配置**:
     -   打开 `washLeakData.py` 文件。
     -   修改 `root_directory_str` 为你原始数据所在的目录路径。
@@ -70,3 +58,17 @@
 4.  **运行主训练脚本** 开始模型训练。
 
 
+## 模型和训练结果
+### 模型结构图
+模型在处理单路对齐数据的时候的结构图
+![alt text](docs/FFormer.drawio.png)
+
+模型在处理未对齐数据的时候的结构图
+![alt text](docs/FFormer内部融合.drawio.png)
+### 实验结果
+![alt text](docs/Pic1W.png)
+![alt text](docs/Pic2W.png)
+
+![alt text](docs/Pic3W.png)
+
+![alt text](docs/prediction_visualization.png)

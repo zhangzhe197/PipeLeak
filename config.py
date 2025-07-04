@@ -1,4 +1,5 @@
 config = {
+        "all_columns": ['ValueH1N', 'ValueH2N', 'ValueA2', 'TimeA1', 'ValueA1', 'ValueP2', 'ValueP1'], 
 
         "freq" : 25600, 
         "alignment": "Data",  # Data or Model
@@ -7,10 +8,10 @@ config = {
         "batch_size": 64,
         "num_workers": 8,  # 根据你的CPU核心数调整
         "dropout": 0.2,
-        "model": "PairedTransformer",  # 可选 "LSTM", "Transformer", "FFT", "CNN", "PairedFFTTransformer", “PairedTransformer”
+        "model": "FFT",  # 可选 "LSTM", "Transformer", "FFT", "CNN", "PairedFFTTransformer", “PairedTransformer”
         "num_epochs": 100,   # 增加训练轮数以观察效果
         "learning_rate": 0.001,
-        "seed" : 123232324,
+        "seed" : 123234,
         "milestone": [33,66],  # 学习率调整的里程碑
         "gamma": 0.2,  # 学习率调整的衰减
         "model_save_path": "best_classification_model.pth"
@@ -66,6 +67,8 @@ dataset_config = {
         "target_col": "LeakType",  # 目标列
         "data_dir": "/home/zhangzhe/data/processed_leak_data/",
         "file_pattern": 'leak_exp_*.csv',
+        "window_size": 256,  # 窗口大小 实际上是0.01s
+        "stride": 256,  # 窗口滑动步长 实际上是0.01s
     },
     "Model":
     {
