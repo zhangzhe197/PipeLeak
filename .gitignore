@@ -1,3 +1,3 @@
 # Ignore all PyTorch model state_dict files
-*.png  
 __pycache__/ 
+*.pth
