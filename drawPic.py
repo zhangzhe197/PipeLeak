@@ -8,7 +8,7 @@ import os
 # --- 从自定义模块导入 ---
 from Loader.SeriesLoader import TimeSeriesDataset
 from utils.predictior import ModelInference # 导入我们刚刚创建的推理接口
-from config import config, model_config
+from config import config, model_config,dataset_config
 from utils.Setseed import set_seed
 
 def main():
@@ -26,6 +26,7 @@ def main():
     try:
         predictor = ModelInference(
             model_path=MODEL_PATH,
+            data_config=dataset_config["Data"],
             config=config,
             model_config=model_config,
             class_names=CLASS_NAMES
@@ -40,18 +41,18 @@ def main():
     set_seed(config["seed"])  # 使用相同的种子确保划分一致！
     
     full_dataset = TimeSeriesDataset(
-        data_dir=config["data_dir"],
-        file_pattern=config["file_pattern"],
-        window_size=config["window_size"],
-        stride=config["stride"],
-        target_col=config["target_col"],
+        data_dir=dataset_config["Data"]["data_dir"],
+        file_pattern=dataset_config["Data"]["file_pattern"],
+        window_size=dataset_config["Data"]["window_size"],
+        stride=dataset_config["Data"]["stride"],
+        target_col=dataset_config["Data"]["target_col"],
         Normalization="Sample", # 与你的脚本一致
-        delete_col=config["delete_col"],
-        constant_col=config["constant_col"]
+        delete_col=dataset_config["Data"]["delete_col"],
+        constant_col=dataset_config["Data"]["constant_col"]
     )
     
     # 完全复制你的划分逻辑
-    non_train_size = int(config["validation_split"] * len(full_dataset))
+    non_train_size = int(dataset_config["Data"]["validation_split"] * len(full_dataset))
     train_size = len(full_dataset) - non_train_size
     train_dataset, val_test_dataset = random_split(full_dataset, [train_size, non_train_size])
     val_size = int(0.5 * len(val_test_dataset))
