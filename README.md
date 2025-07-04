@@ -3,6 +3,20 @@
 
 这是中国石油大学(华东) 2025 年小学期计算机科学与技术人工智能方向的实践, 
 
+## 模型和训练结果
+### 模型结构图
+模型在处理单路对齐数据的时候的结构图
+![alt text](docs/FFormer.drawio.png)
+
+模型在处理未对齐数据的时候的结构图
+![alt text](docs/FFormer内部融合.drawio.png)
+### 实验结果
+![alt text](docs/Pic1W.png)
+![alt text](docs/Pic2W.png)
+
+![alt text](docs/Pic3W.png)
+
+
 ## 1. 数据准备 (使用 `washLeakData.py`)
 
 此脚本用于将原始的传感器CSV文件和声学RAW文件转换为适合模型训练的结构化数据。
@@ -56,14 +70,3 @@
 4.  **运行主训练脚本** 开始模型训练。
 
 
-# 模型和训练结果
-## 模型结构图
-模型在处理单路对齐数据的时候的结构图
-![alt text](docs/FFormer.drawio.png)
-模型在处理未对齐数据的时候的结构图
-![alt text](docs/FFormer内部融合.drawio.png)
-## 实验结果
-![alt text](docs/Picture1.png)
-![alt text](docs/Picture2.png)
-
-![alt text](docs/Picture3.png)
