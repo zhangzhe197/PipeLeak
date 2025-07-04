@@ -10,7 +10,7 @@ config = {
         "model": "PairedTransformer",  # 可选 "LSTM", "Transformer", "FFT", "CNN", "PairedFFTTransformer", “PairedTransformer”
         "num_epochs": 100,   # 增加训练轮数以观察效果
         "learning_rate": 0.001,
-        "seed" : 1234,
+        "seed" : 123232324,
         "milestone": [33,66],  # 学习率调整的里程碑
         "gamma": 0.2,  # 学习率调整的衰减
         "model_save_path": "best_classification_model.pth"
