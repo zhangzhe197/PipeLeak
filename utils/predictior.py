@@ -14,7 +14,7 @@ class ModelInference:
     一个模型推理接口层，用于对单个DataFrame进行预测。
     该接口固定使用与训练时一致的样本级别归一化方法。
     """
-    def __init__(self, model_path, config, model_config, class_names=None):
+    def __init__(self, model_path, config,data_config, model_config, class_names=None):
         """
         初始化推理接口。
 
@@ -30,6 +30,7 @@ class ModelInference:
 
         # --- 1. 设置配置和设备 ---
         self.config = config
+        self.data_config = data_config  # 用于数据处理的配置
         self.model_config = model_config
         self.class_names = class_names
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -37,7 +38,7 @@ class ModelInference:
 
         # --- 2. 预计算数据处理参数 (模仿 TimeSeriesDataset 的 __init__) ---
         # 这些参数在整个生命周期内都是固定的，提前计算可以提高效率
-        self.window_size = self.config['window_size']
+        self.window_size = int(self.config["freq"] * self.config["window_size"])  # 转换为采样点数
         
         # 假设特征列可以从配置中推断或需要一个样本文件来确定
         # 为了简单起见，我们假设可以通过 config['delete_col'] 和 config['target_col']
@@ -46,18 +47,18 @@ class ModelInference:
         # 注意：这里的 feature_cols_names 顺序必须与训练时完全一致！
         # 如果无法从config确定，最好的方法是保存训练时的列名。
         # 假设 config 中有 `all_columns` 字段
-        if 'all_columns' not in self.config:
+        if 'all_columns' not in self.data_config:
              raise ValueError("Config必须包含一个'all_columns'列表，用于确定特征顺序。")
         
-        all_cols = self.config['all_columns']
-        delete_cols = set(self.config.get('delete_col', []) + [self.config.get('target_col', '')])
+        all_cols = self.data_config['all_columns']
+        delete_cols = self.data_config.get('delete_col', [])
         self.feature_cols_names = [col for col in all_cols if col not in delete_cols]
         print(f"使用的特征列: {self.feature_cols_names}")
         
         # 计算在最终特征张量中，可变列和常量列的索引
         self.variable_feature_indices = []
         self.constant_feature_indices = []
-        constant_cols = self.config.get('constant_col', [])
+        constant_cols = set(self.data_config.get('constant_col', []))
         for i, col_name in enumerate(self.feature_cols_names):
             if col_name in constant_cols:
                 self.constant_feature_indices.append(i)

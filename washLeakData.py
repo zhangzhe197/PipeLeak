@@ -6,6 +6,9 @@ import soundfile as sf
 import pdb
 import numpy as np
 # 定义要搜索的根目录
+
+needDataAlignment = False # 是否需要对数据进行时间对齐, 如果对齐, 那么就是对每一个实验生成一个csv文件, 否则就是对每个实验生成两个csv文件, # 一个是声音数据, 一个是其他数据
+
 root_directory_str = "/home/zhangzhe/data/leak" # os.walk 通常接受字符串路径
 class RAWSource(object):
     def __init__(self, **kwargs):
@@ -227,6 +230,7 @@ for condition, df in dfs.items():
 for condition, df in dfs.items():
     dfs[condition] = df.drop(columns=["TimeA2" , "TimeP1", "TimeP2"])
 
+print(f"\n--- Using os.walk() combined with pathlib.Path to find all RAW files in '{root_directory_str}' ---")
 
 rawFiles = []
 if os.path.exists(root_directory_str) and os.path.isdir(root_directory_str):
@@ -245,8 +249,9 @@ if os.path.exists(root_directory_str) and os.path.isdir(root_directory_str):
 else:
     print(f"Directory '{root_directory_str}' does not exist or is not a directory. Please run the setup script first.")
 
+Hdf = {}
 
-
+print(f"\n--- Processing RAW files ---")
 for raw_file in rawFiles:
     raw_file_name = raw_file.name
     raw_file_name_ele = raw_file_name.split('_')
@@ -254,21 +259,36 @@ for raw_file in rawFiles:
         continue
     if raw_file_name_ele[-2] == "NN":
         continue
-    condition = f"{raw_file_name_ele[0]}_{raw_file_name_ele[1]}_{raw_file_name_ele[2]}"
-
+    condition = f"{raw_file_name_ele[0]}_{raw_file_name_ele[1]}_{raw_file_name_ele[2]}" 
+    timeColName = 'Time' + raw_file_name_ele[-1].split(".")[0] + raw_file_name_ele[-2]
     df = read_single_raw_file_to_df(raw_file)
     df.rename(columns={'value': 'Value' + raw_file_name_ele[-1].split(".")[0] + raw_file_name_ele[-2]}, inplace=True)
-    interpolated_sound_df = interpolate_dataframe_by_times(
-        df_main=df,
-        time_column='time_in_seconds',
-        df_target_times=dfs[condition],
-        target_time_column='TimeA1',
-    
-        )
-    interpolated_sound_df = interpolated_sound_df.reset_index(drop=True) 
-    interpolated_sound_df.index = interpolated_sound_df.index + 1
-    dfs[condition] =  pd.concat([interpolated_sound_df,dfs[condition]], axis=1)
+    df.rename(columns={'time_in_seconds': timeColName}, inplace=True)
+    if needDataAlignment:
+        interpolated_sound_df = interpolate_dataframe_by_times(
+            df_main=df,
+            time_column='time_in_seconds',
+            df_target_times=dfs[condition],
+            target_time_column='TimeA1',
+        
+            )
+        interpolated_sound_df = interpolated_sound_df.reset_index(drop=True) 
+        interpolated_sound_df.index = interpolated_sound_df.index + 1
+        dfs[condition] =  pd.concat([interpolated_sound_df,dfs[condition]], axis=1)
+    else:
+        if condition not in Hdf:
+            Hdf[condition] = df[df[timeColName] <= 30]
+        else:
+            Hdf[condition] = pd.concat([Hdf[condition], df[df[timeColName] <= 30]], axis=1)
 
+
+for condition, df in Hdf.items():
+    df = df.drop(columns = ["TimeH2N"])        
+    Hdf[condition] = df 
+
+pdb.set_trace()
+
+print(f"\n--- Processing completed. Numberlize  ---")
 newDFS = {}
 for condition, df in dfs.items():
     if condition.endswith("Transient"):
@@ -296,8 +316,16 @@ for condition, df in dfs.items():
     elif condition_ele[2] == "ND":
         newDFS[condition]['FlowCondition'] = 2
     
-save_DIR = "/home/zhangzhe/data/leak/processed_data/"
+save_DIR = "/home/zhangzhe/data/processed_leak_data/"
 count = 1
-for _, df in newDFS.items():
-    df.to_csv(save_DIR + f"leak_exp_{count}.csv", index=False)
-    count += 1
+if needDataAlignment:
+    for _, df in newDFS.items():
+        df.to_csv(save_DIR + f"leak_exp_{count}.csv", index=False)
+        count += 1
+else:
+    for condition, df in newDFS.items():
+        df.to_csv(save_DIR + f"leak_exp_Nsound_{count}.csv", index=False)
+        Hdf[condition].to_csv(save_DIR + f"leak_exp_sound_{count}.csv", index=False)
+
+        
+        count += 1
