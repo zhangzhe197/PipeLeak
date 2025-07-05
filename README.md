@@ -49,6 +49,10 @@
     ```bash
     python trainModelAlignment.py
     ```
+## 3. 使用平台
+    streamlit run app.py 
+
+我们使用streamlit简单制作了一个前端页面, 能够模拟读入数据并显示结果
 
 ## 使用流程总结
 
